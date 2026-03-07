@@ -1,12 +1,18 @@
+import './App.css'  
+import GamePage from './pages/GamePage'
+import StartMenu from './pages/StartMenu'
+import { useGameStore } from './store/gameStore'
 
-import './App.css'
 
 function App() {
- 
+  const started = useGameStore((state) => state.started)
+
   return(
-    <div className="app-container">
-      <h1 style={{color:"white"}} >Welcome to Desi Ludo</h1>
+    <div className='app-shell'>
+      {!started && <StartMenu />}
+      {started && <GamePage />}
     </div>
+
   )
 }
 
