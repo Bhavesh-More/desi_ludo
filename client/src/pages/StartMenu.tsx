@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { motion } from "framer-motion"
 import { useGameStore } from "../store/gameStore"
 
 export default function StartMenu() {
@@ -19,9 +20,19 @@ export default function StartMenu() {
     }
 
     return (
-        <section className="menu-screen">
+        <motion.section
+            className="menu-screen"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+        >
 
-            <div className="menu-card">
+            <motion.div
+                className="menu-card"
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.45, ease: "easeOut", delay: 0.08 }}
+            >
 
                 <p className="menu-kicker">Frontend Preview</p>
 
@@ -52,20 +63,22 @@ export default function StartMenu() {
 
                 </div>
 
-                <button
+                <motion.button
                     onClick={handleStart}
                     className="primary-btn w-60"
                     disabled={isStarting}
+                    whileHover={{ scale: isStarting ? 1 : 1.03 }}
+                    whileTap={{ scale: isStarting ? 1 : 0.97 }}
                 >
                     {isStarting ? "Preparing Board..." : "Start Game"}
-                </button>
+                </motion.button>
 
                 <p className="menu-note">
                     A timeless battle of strategy and luck awaits.
                 </p>
 
-            </div>
+            </motion.div>
 
-        </section>
+        </motion.section>
     )
 }

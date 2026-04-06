@@ -1,0 +1,39 @@
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# CMake build artifacts
+build/
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+compile_commands.json
+
+# Binaries and objects
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+*.exe
+*.out
+
+# Test/temp files
+*.tmp
+*.temp
+
+# Keep vcpkg folder tracked as part of repo setup; ignore only local build outputs
+vcpkg/buildtrees/
+vcpkg/downloads/
+vcpkg/installed/
+vcpkg/packages/

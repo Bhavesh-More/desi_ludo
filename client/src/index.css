@@ -12,6 +12,7 @@
   --accent-strong: #f0b652;
   --danger: #d94848;
   --ok: #10a66d;
+  --board-glow: rgba(255, 218, 139, 0.2);
 
   font-family: "Manrope", "Segoe UI", Tahoma, sans-serif;
   line-height: 1.4;
@@ -196,7 +197,168 @@ body {
 }
 
 .board-panel {
-  padding: 0.85rem;
+  padding: clamp(0.7rem, 1.2vw, 1rem);
+  background:
+    radial-gradient(circle at 15% 15%, rgba(246, 216, 138, 0.13) 0%, transparent 45%),
+    linear-gradient(170deg, rgba(9, 20, 36, 0.92), rgba(7, 16, 29, 0.9));
+}
+
+.board-grid-card {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.board-fallback {
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+  color: var(--text-dim);
+}
+
+.home-token-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.board-stage {
+  position: relative;
+  width: min(760px, 100%);
+  margin: 0 auto;
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(2, 10, 20, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    inset 0 0 0 1px rgba(246, 216, 138, 0.15),
+    0 14px 40px rgba(2, 8, 17, 0.55);
+}
+
+.board-image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.entry-mark-layer,
+.token-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.entry-mark-layer {
+  pointer-events: none;
+}
+
+.board-start-mark,
+.board-entry-mark {
+  position: absolute;
+  width: clamp(22px, 3.2vw, 30px);
+  height: clamp(22px, 3.2vw, 30px);
+  border: 2px solid;
+  transform: translate(-50%, -50%);
+}
+
+.board-start-mark {
+  border-radius: 999px;
+  box-shadow: 0 0 0 5px color-mix(in srgb, currentColor 22%, transparent);
+}
+
+.board-entry-mark {
+  border-radius: 7px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  opacity: 0.95;
+}
+
+.board-center-mark {
+  position: absolute;
+  width: clamp(30px, 4vw, 38px);
+  height: clamp(30px, 4vw, 38px);
+  border: 2px solid rgba(246, 216, 138, 0.95);
+  border-radius: 9px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  box-shadow: 0 0 0 5px rgba(246, 216, 138, 0.18);
+}
+
+.token-layer {
+  pointer-events: none;
+}
+
+.token-pile {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 0;
+  height: 0;
+}
+
+.token-pile-home {
+  z-index: 3;
+}
+
+.token-offset {
+  --ox: 0px;
+  --oy: 0px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(calc(-50% + var(--ox)), calc(-50% + var(--oy)));
+}
+
+.token-dot {
+  position: relative;
+  width: clamp(18px, 2.4vw, 24px);
+  height: clamp(18px, 2.4vw, 24px);
+  border: 1px solid rgba(255, 255, 255, 0.66);
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: clamp(0.58rem, 1vw, 0.72rem);
+  font-weight: 800;
+  pointer-events: auto;
+  cursor: default;
+  box-shadow: 0 3px 9px rgba(3, 8, 17, 0.45);
+}
+
+.token-dot.is-start {
+  border-style: dashed;
+  filter: saturate(0.95);
+}
+
+.token-dot.is-finished {
+  border-color: rgba(246, 216, 138, 0.95);
+  box-shadow:
+    0 0 0 3px rgba(246, 216, 138, 0.22),
+    0 3px 9px rgba(3, 8, 17, 0.45);
+}
+
+.token-dot.can-move,
+.home-token.can-move {
+  cursor: pointer;
+  outline: 2px solid #f6d88a;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px rgba(246, 216, 138, 0.18);
+}
+
+.home-zone {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 0.75rem;
+}
+
+.home-zone h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-dim);
+}
+
+.home-token {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-main);
+  padding: 0.36rem 0.5rem;
+}
+
+.error-text {
+  color: #ff9c9c;
 }
 
 .game-canvas-shell {
@@ -220,6 +382,9 @@ body {
   display: grid;
   gap: 0.8rem;
   align-content: start;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(247, 220, 143, 0.09) 0%, transparent 45%),
+    linear-gradient(170deg, rgba(9, 20, 36, 0.9), rgba(8, 18, 31, 0.88));
 }
 
 .section-title {
@@ -255,10 +420,6 @@ body {
   aspect-ratio: 1 / 1;
   object-fit: contain;
   filter: drop-shadow(0 5px 11px rgba(2, 7, 16, 0.8));
-}
-
-.shell-tile.is-rolling {
-  animation: toss 480ms ease-in-out infinite;
 }
 
 .kawadi-value {
@@ -303,6 +464,24 @@ body {
 
   50% {
     transform: translateY(-5px) rotate(-6deg);
+  }
+}
+
+@media (max-width: 680px) {
+  .game-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .board-panel,
+  .hud-panel {
+    border-radius: 14px;
+  }
+
+  .token-dot {
+    width: 17px;
+    height: 17px;
+    font-size: 0.54rem;
   }
 }
 

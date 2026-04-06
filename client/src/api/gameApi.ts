@@ -1,48 +1,51 @@
-import { type PlayerColor, type ShellFace } from "../types/gameTypes"
+import axios from "axios"
+import { type GameSnapshot, type ShellFace } from "../types/gameTypes"
+
+const API_BASE = "http://localhost:8080"
 
 export interface CreateSessionResponse {
 	sessionId: string
-	playerOrder: PlayerColor[]
+	snapshot: GameSnapshot
 }
 
-export interface ThrowKawadiResponse {
+export interface RollResponse {
+	roll: number
 	shellFaces: ShellFace[]
-	moveValue: number
+	validMoves: number[]
+	snapshot: GameSnapshot
 }
 
-const pause = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
-
-export async function createSession(playerCount: number): Promise<CreateSessionResponse> {
-
-	// Frontend-only placeholder. Replace with an HTTP request once backend is ready.
-	const palette: PlayerColor[] = ["red", "blue", "green", "yellow"]
-	await pause(250)
-
-	return {
-		sessionId: `mock-${Date.now()}`,
-		playerOrder: palette.slice(0, playerCount)
-	}
-
+export interface MoveResponse {
+	captured: boolean
+	snapshot: GameSnapshot
 }
 
-export async function throwKawadi(): Promise<ThrowKawadiResponse> {
+export async function createSession(playerNames: string[]) {
+	const response = await axios.post<CreateSessionResponse>(`${API_BASE}/api/session/create`, {
+		playerNames
+	})
 
-	// Frontend-only placeholder. Replace with server-authoritative result.
-	await pause(450)
+	return response.data
+}
 
-	const shellFaces: ShellFace[] = Array.from({ length: 4 }, () =>
-		Math.random() > 0.5 ? "front" : "back"
-	)
+export async function getSessionState(sessionId: string) {
+	const response = await axios.get<GameSnapshot>(`${API_BASE}/api/session/${sessionId}/state`)
+	return response.data
+}
 
-	let moveValue = shellFaces.filter((face) => face === "front").length
+export async function rollShells(sessionId: string, playerId: number) {
+	const response = await axios.post<RollResponse>(`${API_BASE}/api/session/${sessionId}/roll`, {
+		playerId
+	})
 
-	if (moveValue === 0) {
-		moveValue = 4
-	}
+	return response.data
+}
 
-	return {
-		shellFaces,
-		moveValue
-	}
+export async function moveToken(sessionId: string, playerId: number, tokenId: number) {
+	const response = await axios.post<MoveResponse>(`${API_BASE}/api/session/${sessionId}/move`, {
+		playerId,
+		tokenId
+	})
 
+ 	return response.data
 }

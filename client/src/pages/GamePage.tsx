@@ -1,5 +1,6 @@
 import { useGameStore } from "../store/gameStore"
-import GameContainer from "../components/game/GameContainer"
+import { motion } from "framer-motion"
+import GameBoard from "../components/game/GameBoard"
 import KawadiArea from "../components/game/KawadiArea"
 import PlayerIndicator from "../components/ui/PlayerIndicator"
 
@@ -8,9 +9,17 @@ export default function GamePage() {
     const players = useGameStore((state) => state.players)
     const turnCount = useGameStore((state) => state.turnCount)
     const resetGame = useGameStore((state) => state.resetGame)
+    const snapshot = useGameStore((state) => state.snapshot)
+
+    const winner = snapshot?.winnerId ?? -1
 
     return (
-        <section className="game-screen">
+        <motion.section
+            className="game-screen"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+        >
 
             <header className="game-topbar">
                 <div>
@@ -24,11 +33,21 @@ export default function GamePage() {
             </header>
 
             <div className="game-layout">
-                <div className="board-panel">
-                    <GameContainer />
-                </div>
+                <motion.div
+                    className="board-panel"
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, ease: "easeOut", delay: 0.05 }}
+                >
+                    <GameBoard />
+                </motion.div>
 
-                <aside className="hud-panel">
+                <motion.aside
+                    className="hud-panel"
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, ease: "easeOut", delay: 0.12 }}
+                >
                     <PlayerIndicator />
                     <KawadiArea />
 
@@ -41,10 +60,15 @@ export default function GamePage() {
                         <span>Turn</span>
                         <strong>{turnCount}</strong>
                     </div>
-                </aside>
+
+                    <div className="stat-row">
+                        <span>Winner</span>
+                        <strong>{winner >= 0 ? `Player ${winner + 1}` : "-"}</strong>
+                    </div>
+                </motion.aside>
             </div>
 
-        </section>
+        </motion.section>
 
     )
 }
