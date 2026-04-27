@@ -47,7 +47,9 @@ bool MoveValidator::canMove(const Token& token, int steps, const Board& board, c
         return false;
     }
 
-    const int destination = token.getPathIndex() + steps;
+    // ✅ AT_START tokens treat relative index as 0, not -1
+    const int currentIndex = (token.getState() == TokenState::AT_START) ? 0 : token.getPathIndex();
+    const int destination = currentIndex + steps;
     const int finalIndex = kCenterIndex;
 
     if (destination > finalIndex) {
@@ -66,7 +68,10 @@ bool MoveValidator::canMove(const Token& token, int steps, const Board& board, c
 }
 
 Token* MoveValidator::wouldCapture(const Token& token, int steps, const Board& board, const Player& player) const {
-    const int destination = token.getPathIndex() + steps;
+    // ✅ same anchor fix
+    const int currentIndex = (token.getState() == TokenState::AT_START) ? 0 : token.getPathIndex();
+    const int destination = currentIndex + steps;
+
     if (destination < 0 || destination >= kCenterIndex) {
         return nullptr;
     }

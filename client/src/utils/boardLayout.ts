@@ -15,16 +15,16 @@ const slotByPlayerCount: Record<number, Slot[]> = {
 
 const slotStartCell: Record<Slot, CellPoint> = {
     north: { row: 0, col: 2 },
-    east: { row: 2, col: 4 },
+    east:  { row: 2, col: 4 },
     south: { row: 4, col: 2 },
-    west: { row: 2, col: 0 }
+    west:  { row: 2, col: 0 }
 }
 
 const slotEntryCell: Record<Slot, CellPoint> = {
     north: { row: 0, col: 3 },
-    east: { row: 3, col: 4 },
+    east:  { row: 3, col: 4 },
     south: { row: 4, col: 1 },
-    west: { row: 1, col: 0 }
+    west:  { row: 1, col: 0 }
 }
 
 const colorMap: Record<PlayerColor, string> = {
@@ -54,10 +54,10 @@ export interface HomeTokenBubble {
 }
 
 const slotHomeAnchor: Record<Slot, { xPct: number; yPct: number }> = {
-    north: { xPct: 50, yPct: 7.5 },
-    east: { xPct: 92.5, yPct: 50 },
-    south: { xPct: 50, yPct: 92.5 },
-    west: { xPct: 7.5, yPct: 50 }
+    north: { xPct: 50, yPct: 21.5 },
+    east: { xPct: 80, yPct: 50 },
+    south: { xPct: 50, yPct: 79 },
+    west: { xPct: 20.5, yPct: 50 }
 }
 
 export interface SlotMarker {

@@ -37,6 +37,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     isRolling: false,
 
+    hasThrownThisTurn: false,
+
     turnCount: 1,
 
     snapshot: null,
@@ -60,6 +62,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
             shellFaces: ["back", "back", "back", "back"],
             validMoves: snapshot.validMoves,
             isRolling: false,
+            hasThrownThisTurn: false,
             turnCount: 1,
             snapshot,
             error: null
@@ -78,7 +81,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
             return
         }
 
-        set({ isRolling: true })
+        if (state.hasThrownThisTurn) {
+            return
+        }
+
+        set({ isRolling: true, hasThrownThisTurn: true })
 
         try {
             const result = await rollShells(state.sessionId, state.snapshot.currentPlayerId)
@@ -96,6 +103,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         } catch (error) {
             set({
                 isRolling: false,
+                hasThrownThisTurn: false,
                 error: error instanceof Error ? error.message : "Roll failed"
             })
         }
@@ -116,6 +124,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 activePlayerIndex: result.snapshot.currentPlayerId,
                 validMoves: result.snapshot.validMoves,
                 kawadiValue: result.snapshot.lastRoll,
+                hasThrownThisTurn: false,
                 error: null
             })
         } catch (error) {
@@ -152,6 +161,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         shellFaces: ["back", "back", "back", "back"],
         validMoves: [],
         isRolling: false,
+        hasThrownThisTurn: false,
         turnCount: 1,
         snapshot: null,
         backendMode: "live",

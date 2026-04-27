@@ -7,6 +7,7 @@ export default function KawadiArea() {
     const kawadiValue = useGameStore((s) => s.kawadiValue)
     const shellFaces = useGameStore((s) => s.shellFaces)
     const isRolling = useGameStore((s) => s.isRolling)
+    const hasThrownThisTurn = useGameStore((s) => s.hasThrownThisTurn)
     const validMoves = useGameStore((s) => s.validMoves)
     const snapshot = useGameStore((s) => s.snapshot)
     const error = useGameStore((s) => s.error)
@@ -39,11 +40,11 @@ export default function KawadiArea() {
             <motion.button
                 onClick={throwShell}
                 className="primary-btn"
-                disabled={isRolling || !snapshot || snapshot.winnerId >= 0}
+                disabled={isRolling || hasThrownThisTurn || !snapshot || snapshot.winnerId >= 0}
                 whileHover={{ scale: isRolling ? 1 : 1.03 }}
                 whileTap={{ scale: isRolling ? 1 : 0.97 }}
             >
-                {isRolling ? "Rolling..." : "Throw Kawadi"}
+                {isRolling ? "Rolling..." : hasThrownThisTurn ? "Thrown" : "Throw Kawadi"}
             </motion.button>
 
             <div className="kawadi-value">

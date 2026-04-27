@@ -18,8 +18,9 @@ std::string Token::getType() const {
 void Token::move(int steps) {
     if (state == TokenState::AT_START) {
         state = TokenState::ACTIVE;
+        pathIndex = 0;  // anchor to relative index 0 (player's own start cell)
     }
-    pathIndex += steps;
+    pathIndex += steps;  // now rolls count FROM start, not including it
 }
 
 void Token::sendHome() {

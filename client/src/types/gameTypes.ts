@@ -49,6 +49,7 @@ export interface GameState {
     shellFaces: ShellFace[]
     validMoves: number[]
     isRolling: boolean
+    hasThrownThisTurn: boolean
     turnCount: number
     snapshot: GameSnapshot | null
     backendMode: "live"
