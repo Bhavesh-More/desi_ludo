@@ -1,4 +1,3 @@
-import './App.css'  
 import GamePage from './pages/GamePage'
 import StartMenu from './pages/StartMenu'
 import { useGameStore } from './store/gameStore'

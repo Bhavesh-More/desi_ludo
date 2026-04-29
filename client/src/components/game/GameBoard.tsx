@@ -3,61 +3,82 @@ import { motion } from "framer-motion"
 import { useGameStore } from "../../store/gameStore"
 import { buildRenderTokens, getCellPercent, getColor, getTokenOffset } from "../../utils/boardLayout"
 
+const PLAYER_COLORS: Record<string, string> = {
+    red:    "#EB001B",
+    blue:   "#2C7BE5",
+    green:  "#10A66D",
+    yellow: "#D49B00",
+}
+
 export default function GameBoard() {
     const snapshot = useGameStore((s) => s.snapshot)
     const validMoves = useGameStore((s) => s.validMoves)
     const moveSelectedToken = useGameStore((s) => s.moveSelectedToken)
 
-    const currentPlayer = snapshot?.playerStates.find((player) => player.playerId === snapshot.currentPlayerId)
+    const currentPlayer = snapshot?.playerStates.find(
+        (player) => player.playerId === snapshot.currentPlayerId
+    )
 
     const { tokens, homeTokens, slotMarkers } = useMemo(() => {
-        if (!snapshot) {
-            return { tokens: [], homeTokens: [], slotMarkers: [] }
-        }
-
+        if (!snapshot) return { tokens: [], homeTokens: [], slotMarkers: [] }
         return buildRenderTokens(snapshot, validMoves)
     }, [snapshot, validMoves])
 
     const tokenGroups = useMemo(() => {
         const grouped = new Map<string, typeof tokens>()
-
         tokens.forEach((token) => {
             const key = `${token.row}-${token.col}`
             const list = grouped.get(key) ?? []
             list.push(token)
             grouped.set(key, list)
         })
-
         return grouped
     }, [tokens])
 
     const homeTokenGroups = useMemo(() => {
         const grouped = new Map<number, typeof homeTokens>()
-
         homeTokens.forEach((token) => {
             const list = grouped.get(token.ownerId) ?? []
             list.push(token)
             grouped.set(token.ownerId, list)
         })
-
         return grouped
     }, [homeTokens])
 
     if (!snapshot) {
-        return <div className="board-fallback">Waiting for game session...</div>
+        return (
+            <div className="board-fallback">
+                <p className="board-loading-text">Waiting for game session…</p>
+            </div>
+        )
     }
 
     return (
-        <section className="board-grid-card">
-            <h3 className="section-title">Live Board State</h3>
+        <div className="board-card">
+            {/* Section eyebrow */}
+            <div className="board-card-header">
+                <span className="board-eyebrow">
+                    <span className="eyebrow-dot" />
+                    Live Board
+                </span>
+            </div>
 
+            {/* Stadium media frame */}
             <motion.div
-                className="board-stage"
-                initial={{ opacity: 0, scale: 0.975, y: 8 }}
+                className="board-stadium"
+                initial={{ opacity: 0, scale: 0.97, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ duration: 0.38, ease: "easeOut" }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
             >
-                <img src="/assets/board/board.png" alt="Challas Aath board" className="board-image" />
+                <img
+                    src="/assets/board/board.png"
+                    alt="Challas Aath game board"
+                    className="board-stadium-img"
+                />
+
+                {/* Corner orbit accent marks */}
+                <div className="board-corner-tl" aria-hidden="true" />
+                <div className="board-corner-br" aria-hidden="true" />
 
                 <div className="entry-mark-layer">
                     {slotMarkers.map((marker) => {
@@ -69,11 +90,19 @@ export default function GameBoard() {
                             <div key={`marker-${marker.ownerId}`}>
                                 <div
                                     className="board-start-mark"
-                                    style={{ left: `${start.xPct}%`, top: `${start.yPct}%`, borderColor: color }}
+                                    style={{
+                                        left: `${start.xPct}%`,
+                                        top: `${start.yPct}%`,
+                                        borderColor: color,
+                                    }}
                                 />
                                 <div
                                     className="board-entry-mark"
-                                    style={{ left: `${entry.xPct}%`, top: `${entry.yPct}%`, borderColor: color }}
+                                    style={{
+                                        left: `${entry.xPct}%`,
+                                        top: `${entry.yPct}%`,
+                                        borderColor: color,
+                                    }}
                                 />
                             </div>
                         )
@@ -116,19 +145,20 @@ export default function GameBoard() {
                                                 initial={{ opacity: 0, scale: 0.72 }}
                                                 animate={{ opacity: 1, scale: 1 }}
                                                 type="button"
-                                                className={`token-dot ${token.isMovable ? "can-move" : ""} ${token.state === "AT_START" ? "is-start" : ""} ${token.state === "FINISHED" ? "is-finished" : ""}`}
+                                                className={`token-piece ${token.isMovable ? "can-move" : ""} ${token.state === "AT_START" ? "at-start" : ""} ${token.state === "FINISHED" ? "finished" : ""}`}
                                                 style={{ backgroundColor: color }}
                                                 onClick={() => {
                                                     if (token.isMovable) {
                                                         void moveSelectedToken(token.tokenId)
                                                     }
                                                 }}
-                                                whileHover={token.isMovable ? { scale: 1.08 } : undefined}
-                                                whileTap={token.isMovable ? { scale: 0.95 } : undefined}
+                                                whileHover={token.isMovable ? { scale: 1.1 } : undefined}
+                                                whileTap={token.isMovable ? { scale: 0.93 } : undefined}
                                                 transition={{ type: "spring", stiffness: 340, damping: 24 }}
-                                                title={`P${token.ownerId + 1} T${token.tokenId + 1}`}
+                                                title={`P${token.ownerId + 1} token ${token.tokenId + 1}`}
+                                                aria-label={`Player ${token.ownerId + 1} token ${token.tokenId + 1}`}
                                             >
-                                                {token.tokenId + 1}
+                                                <span className="token-num">{token.tokenId + 1}</span>
                                             </motion.button>
                                         </div>
                                     )
@@ -139,9 +169,7 @@ export default function GameBoard() {
 
                     {Array.from(homeTokenGroups.entries()).map(([ownerId, groupedHomeTokens]) => {
                         const first = groupedHomeTokens[0]
-                        if (!first) {
-                            return null
-                        }
+                        if (!first) return null
 
                         return (
                             <div
@@ -164,19 +192,20 @@ export default function GameBoard() {
                                                 initial={{ opacity: 0, scale: 0.72 }}
                                                 animate={{ opacity: 1, scale: 1 }}
                                                 type="button"
-                                                className={`token-dot is-start ${token.isMovable ? "can-move" : ""}`}
+                                                className={`token-piece at-start ${token.isMovable ? "can-move" : ""}`}
                                                 style={{ backgroundColor: color }}
                                                 onClick={() => {
                                                     if (token.isMovable) {
                                                         void moveSelectedToken(token.tokenId)
                                                     }
                                                 }}
-                                                whileHover={token.isMovable ? { scale: 1.08 } : undefined}
-                                                whileTap={token.isMovable ? { scale: 0.95 } : undefined}
+                                                whileHover={token.isMovable ? { scale: 1.1 } : undefined}
+                                                whileTap={token.isMovable ? { scale: 0.93 } : undefined}
                                                 transition={{ type: "spring", stiffness: 340, damping: 24 }}
-                                                title={`P${token.ownerId + 1} T${token.tokenId + 1}`}
+                                                title={`P${token.ownerId + 1} token ${token.tokenId + 1} at start`}
+                                                aria-label={`Player ${token.ownerId + 1} token ${token.tokenId + 1} at start`}
                                             >
-                                                {token.tokenId + 1}
+                                                <span className="token-num">{token.tokenId + 1}</span>
                                             </motion.button>
                                         </div>
                                     )
@@ -187,28 +216,32 @@ export default function GameBoard() {
                 </div>
             </motion.div>
 
-            <div className="home-zone">
-                <h4>Current Player Tokens</h4>
-                <div className="home-token-list">
+            {/* Token legend */}
+            <div className="board-legend">
+                <div className="legend-row">
                     {currentPlayer?.tokens.map((token) => {
                         const isMovable = validMoves.includes(token.tokenId)
                         return (
                             <button
-                                key={`home-${token.tokenId}`}
+                                key={`legend-${token.tokenId}`}
                                 type="button"
-                                className={`home-token ${isMovable ? "can-move" : ""}`}
+                                className={`legend-token ${isMovable ? "can-move" : ""}`}
+                                style={{ borderColor: PLAYER_COLORS[currentPlayer?.color ?? "red"] }}
                                 onClick={() => {
-                                    if (isMovable) {
-                                        void moveSelectedToken(token.tokenId)
-                                    }
+                                    if (isMovable) void moveSelectedToken(token.tokenId)
                                 }}
                             >
-                                T{token.tokenId + 1}: {token.state} ({token.pathIndex})
+                                <span
+                                    className="legend-dot"
+                                    style={{ backgroundColor: PLAYER_COLORS[currentPlayer?.color ?? "red"] }}
+                                />
+                                T{token.tokenId + 1}
+                                <span className="legend-state">{token.state}</span>
                             </button>
                         )
                     })}
                 </div>
             </div>
-        </section>
+        </div>
     )
 }

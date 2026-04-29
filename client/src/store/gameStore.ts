@@ -116,15 +116,25 @@ export const useGameStore = create<GameStore>((set, get) => ({
             return
         }
 
+        const previousPlayerId = state.snapshot.currentPlayerId
+
         try {
             const result = await moveToken(state.sessionId, state.snapshot.currentPlayerId, tokenId)
 
+            const newPlayerId = result.snapshot.currentPlayerId
+            const playerChanged = newPlayerId !== previousPlayerId
+
+            // Only reset hasThrownThisTurn if turn advanced to next player
+            // If same player still has moves (hasMoreMoves), keep it true
+            const stillHasMoves = result.hasMoreMoves === true && (result.validMoves ?? []).length > 0
+            const shouldResetThrow = playerChanged || (!stillHasMoves && !result.hasMoreMoves)
+
             set({
                 snapshot: result.snapshot,
-                activePlayerIndex: result.snapshot.currentPlayerId,
-                validMoves: result.snapshot.validMoves,
+                activePlayerIndex: newPlayerId,
+                validMoves: result.validMoves ?? [],
                 kawadiValue: result.snapshot.lastRoll,
-                hasThrownThisTurn: false,
+                hasThrownThisTurn: shouldResetThrow ? false : (stillHasMoves ? true : false),
                 error: null
             })
         } catch (error) {

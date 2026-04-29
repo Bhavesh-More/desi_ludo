@@ -1,25 +1,23 @@
 import { useGameStore } from "../../store/gameStore"
 import { motion } from "framer-motion"
 
-export default function PlayerIndicator() {
+const playerColors: Record<string, string> = {
+    red:    "#EB001B",
+    blue:   "#2C7BE5",
+    green:  "#10A66D",
+    yellow: "#D49B00",
+}
 
+export default function PlayerIndicator() {
     const snapshot = useGameStore((s) => s.snapshot)
 
     const playerOrder = snapshot?.playerStates.map((p) => p.color) ?? []
     const activePlayerIndex = snapshot?.currentPlayerId ?? 0
-    const currentPlayer = snapshot?.playerStates.find((p) => p.playerId === activePlayerIndex)?.color ?? "red"
-
-    const colors = {
-        red: "#d94848",
-        blue: "#2c7be5",
-        green: "#10a66d",
-        yellow: "#d49b00"
-    }
+    const currentPlayer =
+        snapshot?.playerStates.find((p) => p.playerId === activePlayerIndex)?.color ?? "red"
 
     return (
-
         <section className="player-card">
-
             <h3 className="section-title">Turn Indicator</h3>
 
             <motion.p
@@ -32,7 +30,7 @@ export default function PlayerIndicator() {
                 Active player:
                 <span
                     className="player-name"
-                    style={{ color: colors[currentPlayer] }}
+                    style={{ color: playerColors[currentPlayer] }}
                 >
                     {currentPlayer}
                 </span>
@@ -43,7 +41,13 @@ export default function PlayerIndicator() {
                     <motion.div
                         key={`${player}-${index}`}
                         className={`player-chip ${index === activePlayerIndex ? "is-active" : ""}`}
-                        style={{ borderColor: colors[player] }}
+                        style={{
+                            borderColor: playerColors[player],
+                            background: index === activePlayerIndex
+                                ? playerColors[player]
+                                : "transparent",
+                            color: index === activePlayerIndex ? "#fff" : playerColors[player],
+                        }}
                         animate={{ scale: index === activePlayerIndex ? 1.04 : 1 }}
                         transition={{ type: "spring", stiffness: 280, damping: 20 }}
                     >
@@ -51,9 +55,6 @@ export default function PlayerIndicator() {
                     </motion.div>
                 ))}
             </div>
-
         </section>
-
     )
-
 }

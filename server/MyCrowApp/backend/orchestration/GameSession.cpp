@@ -119,8 +119,13 @@ nlohmann::json GameSession::rollShells(int playerId) {
 
     validMovesForLastRoll = validator.getValidMoves(players[playerId], rollValue, board);
 
-    nlohmann::json result;
-    result["roll"] = rollValue;
+ if (validMovesForLastRoll.empty() && !state.isFinished()) {
+    state.setBonus(false);
+    advanceTurn();
+}
+
+nlohmann::json result;
+result["roll"] = rollValue;
     result["shellFaces"] = lastShellFaces;
     result["validMoves"] = validMovesForLastRoll;
     result["snapshot"] = getSnapshot().toJson();

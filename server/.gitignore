@@ -12,6 +12,7 @@ logs/
 
 # CMake build artifacts
 build/
+Crow/
 cmake-build-*/
 CMakeCache.txt
 CMakeFiles/

@@ -5,7 +5,6 @@ import KawadiArea from "../components/game/KawadiArea"
 import PlayerIndicator from "../components/ui/PlayerIndicator"
 
 export default function GamePage() {
-
     const players = useGameStore((state) => state.players)
     const turnCount = useGameStore((state) => state.turnCount)
     const resetGame = useGameStore((state) => state.resetGame)
@@ -14,21 +13,19 @@ export default function GamePage() {
     const winner = snapshot?.winnerId ?? -1
 
     return (
-        <motion.section
+        <motion.div
             className="game-screen"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.35, ease: "easeOut" }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
         >
-
             <header className="game-topbar">
                 <div>
                     <p className="topbar-kicker">Desi Ludo</p>
                     <h2 className="topbar-title">Match Board</h2>
                 </div>
-
                 <button className="ghost-btn" onClick={resetGame}>
-                    Back To Menu
+                    ← Back
                 </button>
             </header>
 
@@ -63,12 +60,10 @@ export default function GamePage() {
 
                     <div className="stat-row">
                         <span>Winner</span>
-                        <strong>{winner >= 0 ? `Player ${winner + 1}` : "-"}</strong>
+                        <strong>{winner >= 0 ? `Player ${winner + 1}` : "—"}</strong>
                     </div>
                 </motion.aside>
             </div>
-
-        </motion.section>
-
+        </motion.div>
     )
 }

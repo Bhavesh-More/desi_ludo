@@ -68,7 +68,6 @@ bool MoveValidator::canMove(const Token& token, int steps, const Board& board, c
 }
 
 Token* MoveValidator::wouldCapture(const Token& token, int steps, const Board& board, const Player& player) const {
-    // ✅ same anchor fix
     const int currentIndex = (token.getState() == TokenState::AT_START) ? 0 : token.getPathIndex();
     const int destination = currentIndex + steps;
 
@@ -78,7 +77,8 @@ Token* MoveValidator::wouldCapture(const Token& token, int steps, const Board& b
 
     const auto [r, c] = resolveRouteCell(player, destination);
 
-    if (board.isSafeZone(r, c)) {
+    // Only outer ring cells can be safe zones — inner ring is a private path
+    if (destination < kInnerEntryIndex && board.isSafeZone(r, c)) {
         return nullptr;
     }
 
