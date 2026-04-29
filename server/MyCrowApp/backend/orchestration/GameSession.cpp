@@ -107,6 +107,14 @@ nlohmann::json GameSession::rollShells(int playerId) {
         throw std::runtime_error("not current player turn");
     }
 
+     if (state.isPlayerFinished(playerId)) {
+        state.setBonus(false);
+        advanceTurn();
+        nlohmann::json result;
+        result["snapshot"] = getSnapshot().toJson();
+        return result;
+    }
+    
     const int rollValue = roller->roll();
     state.setLastRoll(rollValue);
     state.setBonus(roller->grantsBonus(rollValue));
@@ -119,7 +127,7 @@ nlohmann::json GameSession::rollShells(int playerId) {
 
     validMovesForLastRoll = validator.getValidMoves(players[playerId], rollValue, board);
 
- if (validMovesForLastRoll.empty() && !state.isFinished()) {
+if (validMovesForLastRoll.empty() || state.isPlayerFinished(playerId)) {
     state.setBonus(false);
     advanceTurn();
 }
@@ -173,6 +181,10 @@ nlohmann::json GameSession::moveToken(int playerId, int tokenId) {
     if (destination == finalIndex) {
         token.setState(TokenState::FINISHED);
         player.incrementFinished();
+        
+        if (player.allFinished()) {
+            state.markPlayerFinished(playerId);
+        }
     } else {
         token.setState(TokenState::ACTIVE);
         board.getCellAt(newR, newC).addOccupant(&token);
@@ -191,9 +203,7 @@ nlohmann::json GameSession::moveToken(int playerId, int tokenId) {
 
     validMovesForLastRoll.clear();
 
-    if (!state.isFinished()) {
-        advanceTurn();
-    }
+    advanceTurn();
 
     nlohmann::json result;
     result["captured"] = captured;
@@ -219,11 +229,27 @@ void GameSession::advanceTurn() {
 }
 
 int GameSession::checkWinCondition() {
+    // Count how many players have finished all tokens
+    int finishedCount = 0;
+    int firstFinishedId = -1;
     for (const auto& player : players) {
         if (player.allFinished()) {
-            return player.getId();
+            ++finishedCount;
+            if (firstFinishedId < 0) firstFinishedId = player.getId();
         }
     }
+
+    const int totalPlayers = static_cast<int>(players.size());
+
+    // For 2 players: first to finish wins immediately
+    // For 3/4 players: game ends when n-1 have finished (last place is determined)
+    if (totalPlayers == 2 && finishedCount >= 1) {
+        return firstFinishedId;
+    }
+    if (totalPlayers > 2 && finishedCount >= totalPlayers - 1) {
+        return firstFinishedId; // winner = first finisher (already tracked by order)
+    }
+
     return -1;
 }
 

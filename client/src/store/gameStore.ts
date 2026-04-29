@@ -77,15 +77,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
             return
         }
 
-        if (state.snapshot.winnerId >= 0) {
-            return
-        }
+          if (state.snapshot.phase === "FINISHED") return
 
-        if (state.hasThrownThisTurn) {
-            return
-        }
+        // if (state.hasThrownThisTurn) {
+        //     return
+        // }
 
-        set({ isRolling: true, hasThrownThisTurn: true })
+        // set({ isRolling: true, hasThrownThisTurn: true })
+        set({ isRolling: true})
 
         try {
             const result = await rollShells(state.sessionId, state.snapshot.currentPlayerId)

@@ -27,7 +27,15 @@ export default function KawadiArea() {
     const snapshot = useGameStore((s) => s.snapshot)
     const error = useGameStore((s) => s.error)
 
-    const isDisabled = isRolling || hasThrownThisTurn || !snapshot || (snapshot?.winnerId ?? -1) >= 0
+
+    const players = useGameStore((s) => s.players)
+
+const finishedPlayers =
+    snapshot?.playerStates.filter(p => p.finishedCount === 4) ?? []
+
+const isGameEnded = finishedPlayers.length >= players - 1 
+
+    const isDisabled = isRolling || hasThrownThisTurn || !snapshot || isGameEnded
 
     return (
         <section className="kawadi-card">

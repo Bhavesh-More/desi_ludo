@@ -15,11 +15,24 @@ void GameState::nextTurn() {
         bonusTurnPending = false;
         return;
     }
-    currentPlayerId = (currentPlayerId + 1) % playerCount;
+    // Skip players who have already finished all their tokens
+    do {
+        currentPlayerId = (currentPlayerId + 1) % playerCount;
+    } while (finishedPlayerIds.count(currentPlayerId) > 0 &&
+             static_cast<int>(finishedPlayerIds.size()) < playerCount);
 }
 
 void GameState::setBonus(bool bonus) {
     bonusTurnPending = bonus;
+}
+
+
+void GameState::markPlayerFinished(int id) {
+    finishedPlayerIds.insert(id);
+}
+
+bool GameState::isPlayerFinished(int id) const {
+    return finishedPlayerIds.count(id) > 0;
 }
 
 void GameState::setWinner(int id) {
