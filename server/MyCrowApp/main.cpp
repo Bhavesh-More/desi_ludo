@@ -18,6 +18,14 @@ int main()
         .methods("POST"_method, "GET"_method, "OPTIONS"_method)
         .origin("https://desi-ludo.vercel.app");
 
+    CROW_ROUTE(app, "/api/<path>").methods("OPTIONS"_method)([](const crow::request &, const std::string &)
+                                                             {
+    crow::response res(204);
+    res.add_header("Access-Control-Allow-Origin", "https://desi-ludo.vercel.app");
+    res.add_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.add_header("Access-Control-Allow-Headers", "Content-Type");
+    return res; });
+
     CROW_ROUTE(app, "/")([]()
                          { return "Challas Aath backend running"; });
 
