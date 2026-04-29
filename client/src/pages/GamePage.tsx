@@ -41,11 +41,6 @@ const PLAYER_COLOR_NAMES: Record<string, string> = {
     const winnerColor = winnerPlayer?.color ?? "red"
     const winnerColorHex = PLAYER_COLORS[winnerColor] ?? "#141413"
     const winnerColorName = PLAYER_COLOR_NAMES[winnerColor] ?? "Unknown"
-    
-const finishedPlayers =
-    snapshot?.playerStates.filter(p => p.finishedCount === 4) ?? []
-
-const isGameEnded = finishedPlayers.length >= players - 1
 
 useEffect(() => {
     const el = mainDivRef.current

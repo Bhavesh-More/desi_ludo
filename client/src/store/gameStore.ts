@@ -79,12 +79,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
           if (state.snapshot.phase === "FINISHED") return
 
-        // if (state.hasThrownThisTurn) {
-        //     return
-        // }
+        if (state.hasThrownThisTurn) {
+            return
+        }
 
-        // set({ isRolling: true, hasThrownThisTurn: true })
-        set({ isRolling: true})
+        set({ isRolling: true, hasThrownThisTurn: true })
 
         try {
             const result = await rollShells(state.sessionId, state.snapshot.currentPlayerId)
@@ -109,39 +108,30 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     },
 
-    moveSelectedToken: async (tokenId) => {
-        const state = get()
-        if (!state.sessionId || !state.snapshot) {
-            return
-        }
+  moveSelectedToken: async (tokenId) => {
+    const state = get()
+    if (!state.sessionId || !state.snapshot) return
 
-        const previousPlayerId = state.snapshot.currentPlayerId
+    const previousPlayerId = state.snapshot.currentPlayerId
 
-        try {
-            const result = await moveToken(state.sessionId, state.snapshot.currentPlayerId, tokenId)
+    try {
+        const result = await moveToken(state.sessionId, state.snapshot.currentPlayerId, tokenId)
 
-            const newPlayerId = result.snapshot.currentPlayerId
-            const playerChanged = newPlayerId !== previousPlayerId
+        const newPlayerId = result.snapshot.currentPlayerId
+        const playerChanged = newPlayerId !== previousPlayerId
 
-            // Only reset hasThrownThisTurn if turn advanced to next player
-            // If same player still has moves (hasMoreMoves), keep it true
-            const stillHasMoves = result.hasMoreMoves === true && (result.validMoves ?? []).length > 0
-            const shouldResetThrow = playerChanged || (!stillHasMoves && !result.hasMoreMoves)
-
-            set({
-                snapshot: result.snapshot,
-                activePlayerIndex: newPlayerId,
-                validMoves: result.validMoves ?? [],
-                kawadiValue: result.snapshot.lastRoll,
-                hasThrownThisTurn: shouldResetThrow ? false : (stillHasMoves ? true : false),
-                error: null
-            })
-        } catch (error) {
-            set({ error: error instanceof Error ? error.message : "Move failed" })
-        }
-
-    },
-
+        set({
+            snapshot: result.snapshot,
+            activePlayerIndex: newPlayerId,
+            validMoves: result.snapshot.validMoves,
+            kawadiValue: result.snapshot.lastRoll,
+            hasThrownThisTurn: !playerChanged,
+            error: null
+        })
+    } catch (error) {
+        set({ error: error instanceof Error ? error.message : "Move failed" })
+    }
+},
     refreshState: async () => {
         const state = get()
         if (!state.sessionId) {
