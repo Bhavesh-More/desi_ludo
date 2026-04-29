@@ -6,142 +6,127 @@
 
 #include "backend/api/SessionRegistry.h"
 #include "crow.h"
-#include "crow/middlewares/cors.h"
 
 int main()
 {
-    crow::App<crow::CORSHandler> app;
+    crow::SimpleApp app;
     challasaath::SessionRegistry sessionRegistry;
 
-    auto& cors = app.get_middleware<crow::CORSHandler>();
-    cors.global()
-        .origin("*")
-        .methods("POST"_method, "GET"_method, "OPTIONS"_method)
-        .headers("Content-Type")
-        .max_age(3600);
+    auto cors = [](crow::response& res) {
+        res.add_header("Access-Control-Allow-Origin", "*");
+        res.add_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        res.add_header("Access-Control-Allow-Headers", "Content-Type");
+    };
 
     CROW_ROUTE(app, "/")([]() { return "Challas Aath backend running"; });
 
-    // Explicit OPTIONS handlers for every route
     CROW_ROUTE(app, "/api/session/create").methods("OPTIONS"_method)
-    ([](const crow::request&) {
-        crow::response res(204);
-        res.add_header("Access-Control-Allow-Origin", "*");
-        res.add_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-        res.add_header("Access-Control-Allow-Headers", "Content-Type");
-        return res;
+    ([&cors](const crow::request&) {
+        crow::response res(204); cors(res); return res;
     });
 
     CROW_ROUTE(app, "/api/session/<string>/state").methods("OPTIONS"_method)
-    ([](const crow::request&, const std::string&) {
-        crow::response res(204);
-        res.add_header("Access-Control-Allow-Origin", "*");
-        res.add_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-        res.add_header("Access-Control-Allow-Headers", "Content-Type");
-        return res;
+    ([&cors](const crow::request&, const std::string&) {
+        crow::response res(204); cors(res); return res;
     });
 
     CROW_ROUTE(app, "/api/session/<string>/roll").methods("OPTIONS"_method)
-    ([](const crow::request&, const std::string&) {
-        crow::response res(204);
-        res.add_header("Access-Control-Allow-Origin", "*");
-        res.add_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-        res.add_header("Access-Control-Allow-Headers", "Content-Type");
-        return res;
+    ([&cors](const crow::request&, const std::string&) {
+        crow::response res(204); cors(res); return res;
     });
 
     CROW_ROUTE(app, "/api/session/<string>/move").methods("OPTIONS"_method)
-    ([](const crow::request&, const std::string&) {
-        crow::response res(204);
-        res.add_header("Access-Control-Allow-Origin", "*");
-        res.add_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-        res.add_header("Access-Control-Allow-Headers", "Content-Type");
-        return res;
+    ([&cors](const crow::request&, const std::string&) {
+        crow::response res(204); cors(res); return res;
     });
 
-    // Actual routes
     CROW_ROUTE(app, "/api/session/create").methods("POST"_method)
-    ([&sessionRegistry](const crow::request& req) {
+    ([&sessionRegistry, &cors](const crow::request& req) {
         try {
             const auto body = nlohmann::json::parse(req.body);
             if (!body.contains("playerNames") || !body["playerNames"].is_array()) {
-                return crow::response(400, R"({"error":"playerNames array is required"})");
+                crow::response res(400, R"({"error":"playerNames array is required"})");
+                cors(res); return res;
             }
-
             std::vector<std::string> names;
             for (const auto& item : body["playerNames"]) {
                 if (!item.is_string()) {
-                    return crow::response(400, R"({"error":"all playerNames must be strings"})");
+                    crow::response res(400, R"({"error":"all playerNames must be strings"})");
+                    cors(res); return res;
                 }
                 names.push_back(item.get<std::string>());
             }
-
             if (names.size() < 2 || names.size() > 4) {
-                return crow::response(400, R"({"error":"player count must be between 2 and 4"})");
+                crow::response res(400, R"({"error":"player count must be between 2 and 4"})");
+                cors(res); return res;
             }
-
             auto session = sessionRegistry.createSession(names);
-
             nlohmann::json response;
             response["sessionId"] = session->getSessionId();
             response["snapshot"] = session->getSnapshot().toJson();
-
-            return crow::response(201, response.dump());
+            crow::response res(201, response.dump());
+            cors(res); return res;
         } catch (const std::exception& ex) {
-            return crow::response(400, nlohmann::json{{"error", ex.what()}}.dump());
+            crow::response res(400, nlohmann::json{{"error", ex.what()}}.dump());
+            cors(res); return res;
         }
     });
 
     CROW_ROUTE(app, "/api/session/<string>/state").methods("GET"_method)
-    ([&sessionRegistry](const std::string& sessionId) {
+    ([&sessionRegistry, &cors](const crow::request&, const std::string& sessionId) {
         auto session = sessionRegistry.getSession(sessionId);
         if (!session) {
-            return crow::response(404, R"({"error":"session not found"})");
+            crow::response res(404, R"({"error":"session not found"})");
+            cors(res); return res;
         }
-        return crow::response(200, session->getSnapshot().toJson().dump());
+        crow::response res(200, session->getSnapshot().toJson().dump());
+        cors(res); return res;
     });
 
     CROW_ROUTE(app, "/api/session/<string>/roll").methods("POST"_method)
-    ([&sessionRegistry](const crow::request& req, const std::string& sessionId) {
+    ([&sessionRegistry, &cors](const crow::request& req, const std::string& sessionId) {
         try {
             auto session = sessionRegistry.getSession(sessionId);
             if (!session) {
-                return crow::response(404, R"({"error":"session not found"})");
+                crow::response res(404, R"({"error":"session not found"})");
+                cors(res); return res;
             }
-
             const auto body = nlohmann::json::parse(req.body);
             if (!body.contains("playerId") || !body["playerId"].is_number_integer()) {
-                return crow::response(400, R"({"error":"playerId is required"})");
+                crow::response res(400, R"({"error":"playerId is required"})");
+                cors(res); return res;
             }
-
             const int playerId = body["playerId"].get<int>();
             const auto result = session->rollShells(playerId);
-            return crow::response(200, result.dump());
+            crow::response res(200, result.dump());
+            cors(res); return res;
         } catch (const std::exception& ex) {
-            return crow::response(400, nlohmann::json{{"error", ex.what()}}.dump());
+            crow::response res(400, nlohmann::json{{"error", ex.what()}}.dump());
+            cors(res); return res;
         }
     });
 
     CROW_ROUTE(app, "/api/session/<string>/move").methods("POST"_method)
-    ([&sessionRegistry](const crow::request& req, const std::string& sessionId) {
+    ([&sessionRegistry, &cors](const crow::request& req, const std::string& sessionId) {
         try {
             auto session = sessionRegistry.getSession(sessionId);
             if (!session) {
-                return crow::response(404, R"({"error":"session not found"})");
+                crow::response res(404, R"({"error":"session not found"})");
+                cors(res); return res;
             }
-
             const auto body = nlohmann::json::parse(req.body);
             if (!body.contains("playerId") || !body.contains("tokenId")) {
-                return crow::response(400, R"({"error":"playerId and tokenId are required"})");
+                crow::response res(400, R"({"error":"playerId and tokenId are required"})");
+                cors(res); return res;
             }
-
             const int playerId = body["playerId"].get<int>();
             const int tokenId = body["tokenId"].get<int>();
-
             const auto result = session->moveToken(playerId, tokenId);
-            return crow::response(200, result.dump());
+            crow::response res(200, result.dump());
+            cors(res); return res;
         } catch (const std::exception& ex) {
-            return crow::response(400, nlohmann::json{{"error", ex.what()}}.dump());
+            crow::response res(400, nlohmann::json{{"error", ex.what()}}.dump());
+            cors(res); return res;
         }
     });
 
