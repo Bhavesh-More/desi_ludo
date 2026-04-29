@@ -7,19 +7,22 @@
 #include "crow.h"
 #include "crow/middlewares/cors.h"
 
-int main() {
+int main()
+{
     crow::App<crow::CORSHandler> app;
     challasaath::SessionRegistry sessionRegistry;
 
-    auto& cors = app.get_middleware<crow::CORSHandler>();
+    auto &cors = app.get_middleware<crow::CORSHandler>();
     cors.global()
         .headers("Content-Type")
         .methods("POST"_method, "GET"_method, "OPTIONS"_method)
-        .origin("*");
+        .origin("https://desi-ludo.vercel.app");
 
-    CROW_ROUTE(app, "/")([]() { return "Challas Aath backend running"; });
+    CROW_ROUTE(app, "/")([]()
+                         { return "Challas Aath backend running"; });
 
-    CROW_ROUTE(app, "/api/session/create").methods("POST"_method)([&sessionRegistry](const crow::request& req) {
+    CROW_ROUTE(app, "/api/session/create").methods("POST"_method)([&sessionRegistry](const crow::request &req)
+                                                                  {
         try {
             const auto body = nlohmann::json::parse(req.body);
             if (!body.contains("playerNames") || !body["playerNames"].is_array()) {
@@ -49,18 +52,18 @@ int main() {
             nlohmann::json err;
             err["error"] = ex.what();
             return crow::response(400, err.dump());
-        }
-    });
+        } });
 
-    CROW_ROUTE(app, "/api/session/<string>/state").methods("GET"_method)([&sessionRegistry](const std::string& sessionId) {
+    CROW_ROUTE(app, "/api/session/<string>/state").methods("GET"_method)([&sessionRegistry](const std::string &sessionId)
+                                                                         {
         auto session = sessionRegistry.getSession(sessionId);
         if (!session) {
             return crow::response(404, R"({"error":"session not found"})");
         }
-        return crow::response(200, session->getSnapshot().toJson().dump());
-    });
+        return crow::response(200, session->getSnapshot().toJson().dump()); });
 
-    CROW_ROUTE(app, "/api/session/<string>/roll").methods("POST"_method)([&sessionRegistry](const crow::request& req, const std::string& sessionId) {
+    CROW_ROUTE(app, "/api/session/<string>/roll").methods("POST"_method)([&sessionRegistry](const crow::request &req, const std::string &sessionId)
+                                                                         {
         try {
             auto session = sessionRegistry.getSession(sessionId);
             if (!session) {
@@ -79,10 +82,10 @@ int main() {
             nlohmann::json err;
             err["error"] = ex.what();
             return crow::response(400, err.dump());
-        }
-    });
+        } });
 
-    CROW_ROUTE(app, "/api/session/<string>/move").methods("POST"_method)([&sessionRegistry](const crow::request& req, const std::string& sessionId) {
+    CROW_ROUTE(app, "/api/session/<string>/move").methods("POST"_method)([&sessionRegistry](const crow::request &req, const std::string &sessionId)
+                                                                         {
         try {
             auto session = sessionRegistry.getSession(sessionId);
             if (!session) {
@@ -103,8 +106,7 @@ int main() {
             nlohmann::json err;
             err["error"] = ex.what();
             return crow::response(400, err.dump());
-        }
-    });
+        } });
 
     std::cout << "Server started at http://localhost:8080" << std::endl;
     app.port(8080).multithreaded().run();
