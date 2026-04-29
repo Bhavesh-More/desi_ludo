@@ -22,6 +22,44 @@ int main()
 
     CROW_ROUTE(app, "/")([]() { return "Challas Aath backend running"; });
 
+    // Explicit OPTIONS handlers for every route
+    CROW_ROUTE(app, "/api/session/create").methods("OPTIONS"_method)
+    ([](const crow::request&) {
+        crow::response res(204);
+        res.add_header("Access-Control-Allow-Origin", "*");
+        res.add_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        res.add_header("Access-Control-Allow-Headers", "Content-Type");
+        return res;
+    });
+
+    CROW_ROUTE(app, "/api/session/<string>/state").methods("OPTIONS"_method)
+    ([](const crow::request&, const std::string&) {
+        crow::response res(204);
+        res.add_header("Access-Control-Allow-Origin", "*");
+        res.add_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        res.add_header("Access-Control-Allow-Headers", "Content-Type");
+        return res;
+    });
+
+    CROW_ROUTE(app, "/api/session/<string>/roll").methods("OPTIONS"_method)
+    ([](const crow::request&, const std::string&) {
+        crow::response res(204);
+        res.add_header("Access-Control-Allow-Origin", "*");
+        res.add_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        res.add_header("Access-Control-Allow-Headers", "Content-Type");
+        return res;
+    });
+
+    CROW_ROUTE(app, "/api/session/<string>/move").methods("OPTIONS"_method)
+    ([](const crow::request&, const std::string&) {
+        crow::response res(204);
+        res.add_header("Access-Control-Allow-Origin", "*");
+        res.add_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        res.add_header("Access-Control-Allow-Headers", "Content-Type");
+        return res;
+    });
+
+    // Actual routes
     CROW_ROUTE(app, "/api/session/create").methods("POST"_method)
     ([&sessionRegistry](const crow::request& req) {
         try {
