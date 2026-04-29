@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <cstdlib>
 
 #include <nlohmann/json.hpp>
 
@@ -10,14 +11,14 @@
 int main()
 {
     crow::App<crow::CORSHandler> app;
-
-    app.get_middleware<crow::CORSHandler>()
-        .global()
-        .headers("Content-Type")
-        .methods("POST"_method, "GET"_method, "OPTIONS"_method)
-        .origin("*");
-
     challasaath::SessionRegistry sessionRegistry;
+
+    auto& cors = app.get_middleware<crow::CORSHandler>();
+    cors.global()
+        .origin("*")
+        .methods("POST"_method, "GET"_method, "OPTIONS"_method)
+        .headers("Content-Type")
+        .max_age(3600);
 
     CROW_ROUTE(app, "/")([]() { return "Challas Aath backend running"; });
 
@@ -49,9 +50,7 @@ int main()
 
             return crow::response(201, response.dump());
         } catch (const std::exception& ex) {
-            nlohmann::json err;
-            err["error"] = ex.what();
-            return crow::response(400, err.dump());
+            return crow::response(400, nlohmann::json{{"error", ex.what()}}.dump());
         }
     });
 
@@ -81,9 +80,7 @@ int main()
             const auto result = session->rollShells(playerId);
             return crow::response(200, result.dump());
         } catch (const std::exception& ex) {
-            nlohmann::json err;
-            err["error"] = ex.what();
-            return crow::response(400, err.dump());
+            return crow::response(400, nlohmann::json{{"error", ex.what()}}.dump());
         }
     });
 
@@ -106,12 +103,12 @@ int main()
             const auto result = session->moveToken(playerId, tokenId);
             return crow::response(200, result.dump());
         } catch (const std::exception& ex) {
-            nlohmann::json err;
-            err["error"] = ex.what();
-            return crow::response(400, err.dump());
+            return crow::response(400, nlohmann::json{{"error", ex.what()}}.dump());
         }
     });
 
-    std::cout << "Server started at http://localhost:8080" << std::endl;
-    app.port(8080).multithreaded().run();
+    const char* port_env = std::getenv("PORT");
+    int port = port_env ? std::stoi(port_env) : 8080;
+    std::cout << "Server started on port " << port << std::endl;
+    app.port(port).multithreaded().run();
 }
