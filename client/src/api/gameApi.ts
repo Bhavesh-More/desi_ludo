@@ -1,7 +1,7 @@
 import axios from "axios"
 import { type GameSnapshot, type ShellFace } from "../types/gameTypes"
 
-const API_BASE = "http://localhost:8080"
+const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8080"
 
 export interface CreateSessionResponse {
 	sessionId: string
