@@ -5,12 +5,13 @@ set(CMAKE_CXX_STANDARD 17)
 
 include(FetchContent)
 
-# Crow (includes Asio as a dependency automatically)
+# Crow
 FetchContent_Declare(
     Crow
     GIT_REPOSITORY https://github.com/CrowCpp/Crow.git
     GIT_TAG        v1.2.0
 )
+set(ASIO_INCLUDE_DIR /usr/include CACHE PATH "" FORCE)
 FetchContent_MakeAvailable(Crow)
 
 # nlohmann/json

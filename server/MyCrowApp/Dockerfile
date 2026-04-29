@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     git \
     libboost-all-dev \
+    libasio-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
